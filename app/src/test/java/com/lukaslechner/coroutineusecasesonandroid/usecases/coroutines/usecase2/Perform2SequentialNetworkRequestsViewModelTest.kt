@@ -1,11 +1,8 @@
 package com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase2
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.lukaslechner.coroutineusecasesonandroid.mock.mockVersionFeaturesAndroid10
-import com.lukaslechner.coroutineusecasesonandroid.utils.ReplaceMainDispatcherRule
+import com.lukaslechner.coroutineusecasesonandroid.utils.MainCoroutineScopeRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runTest
-import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
@@ -17,65 +14,23 @@ class Perform2SequentialNetworkRequestsViewModelTest {
     val testInstantTaskExecutorRule: TestRule = InstantTaskExecutorRule()
 
     @get: Rule
-    val replaceMainDispatcherRule = ReplaceMainDispatcherRule()
+    val mainCoroutineScopeRule: MainCoroutineScopeRule = MainCoroutineScopeRule()
 
     private val receivedUiStates = mutableListOf<UiState>()
 
     @Test
-    fun `should return Success when both network requests are successful`() = runTest {
-        val fakeApi = FakeSuccessApi()
-        val viewModel = Perform2SequentialNetworkRequestsViewModel(fakeApi)
-        viewModel.observe()
-
-        Assert.assertTrue(receivedUiStates.isEmpty())
-
-        viewModel.perform2SequentialNetworkRequest()
-
-        Assert.assertEquals(
-            listOf(
-                UiState.Loading,
-                UiState.Success(mockVersionFeaturesAndroid10)
-            ),
-            receivedUiStates
-        )
+    fun `should return Success when both network requests are successful`() {
+        // TODO
     }
 
     @Test
-    fun `should return Error when first network requests fails`() = runTest {
-        val fakeApi = FakeVersionsErrorApi()
-        val viewModel = Perform2SequentialNetworkRequestsViewModel(fakeApi)
-        viewModel.observe()
-
-        Assert.assertTrue(receivedUiStates.isEmpty())
-
-        viewModel.perform2SequentialNetworkRequest()
-
-        Assert.assertEquals(
-            listOf(
-                UiState.Loading,
-                UiState.Error("Network Request failed")
-            ),
-            receivedUiStates
-        )
+    fun `should return Error when first network requests fails`() {
+        // TODO
     }
 
     @Test
-    fun `should return Error when second network requests fails`() = runTest {
-        val fakeApi = FakeFeaturesErrorApi()
-        val viewModel = Perform2SequentialNetworkRequestsViewModel(fakeApi)
-        viewModel.observe()
-
-        Assert.assertTrue(receivedUiStates.isEmpty())
-
-        viewModel.perform2SequentialNetworkRequest()
-
-        Assert.assertEquals(
-            listOf(
-                UiState.Loading,
-                UiState.Error("Network Request failed")
-            ),
-            receivedUiStates
-        )
+    fun `should return Error when second network requests fails`() {
+        // TODO
     }
 
     private fun Perform2SequentialNetworkRequestsViewModel.observe() {
