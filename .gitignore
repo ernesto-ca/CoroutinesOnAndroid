@@ -17,6 +17,7 @@ captures/
 output-metadata.json
 
 # IntelliJ
+/.idea/**/*
 *.iml
 .idea/
 misc.xml
