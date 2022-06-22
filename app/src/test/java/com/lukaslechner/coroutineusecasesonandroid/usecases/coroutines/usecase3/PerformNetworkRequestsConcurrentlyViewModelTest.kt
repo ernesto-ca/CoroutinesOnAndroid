@@ -1,4 +1,4 @@
-package com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase4
+package com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase3
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.lukaslechner.coroutineusecasesonandroid.mock.mockVersionFeaturesAndroid10
@@ -15,7 +15,7 @@ import org.junit.Test
 import org.junit.rules.TestRule
 
 @ExperimentalCoroutinesApi
-class VariableAmountOfNetworkRequestsViewModelTest {
+class PerformNetworkRequestsConcurrentlyViewModelTest {
 
     @get:Rule
     val testInstantTaskExecutorRule: TestRule = InstantTaskExecutorRule()
@@ -26,11 +26,11 @@ class VariableAmountOfNetworkRequestsViewModelTest {
     private val receivedUiStates = mutableListOf<UiState>()
 
     @Test
-    fun `performNetworkRequestsSequentially() should return Success UiState on successful network requests after 4000ms`() =
+    fun `performNetworkRequestsSequentially should return data after 3 times the response delay`() =
         runTest {
             val responseDelay = 1000L
             val fakeApi = FakeSuccessApi(responseDelay)
-            val viewModel = VariableAmountOfNetworkRequestsViewModel(fakeApi)
+            val viewModel = PerformNetworkRequestsConcurrentlyViewModel(fakeApi)
             viewModel.observe()
 
             Assert.assertTrue(receivedUiStates.isEmpty())
@@ -53,64 +53,20 @@ class VariableAmountOfNetworkRequestsViewModelTest {
                 receivedUiStates
             )
 
+            // Verify that requests actually got executed sequentially and it took
+            // 3000ms to receive all data
             Assert.assertEquals(
-                4000,
+                3000,
                 currentTime
             )
         }
 
     @Test
-    fun `performNetworkRequestsSequentially() should return Error UiState on unsuccessful recent-android-versions network request`() =
-        runTest {
-            val responseDelay = 1000L
-            val fakeApi = FakeVersionsErrorApi(responseDelay)
-            val viewModel = VariableAmountOfNetworkRequestsViewModel(fakeApi)
-            viewModel.observe()
-
-            Assert.assertTrue(receivedUiStates.isEmpty())
-
-            viewModel.performNetworkRequestsSequentially()
-
-            advanceUntilIdle()
-
-            Assert.assertEquals(
-                listOf(
-                    UiState.Loading,
-                    UiState.Error("Network Request failed")
-                ),
-                receivedUiStates
-            )
-        }
-
-    @Test
-    fun `performNetworkRequestsSequentially() should return Error UiState on unsuccessful android-version-features network request`() =
-        runTest {
-            val responseDelay = 1000L
-            val fakeApi = FakeFeaturesErrorApi(responseDelay)
-            val viewModel = VariableAmountOfNetworkRequestsViewModel(fakeApi)
-            viewModel.observe()
-
-            Assert.assertTrue(receivedUiStates.isEmpty())
-
-            viewModel.performNetworkRequestsSequentially()
-
-            advanceUntilIdle()
-
-            Assert.assertEquals(
-                listOf(
-                    UiState.Loading,
-                    UiState.Error("Network Request failed")
-                ),
-                receivedUiStates
-            )
-        }
-
-    @Test
-    fun `performNetworkRequestsConcurrently() should return Success UiState on successful network requests after 2000ms`() =
+    fun `performNetworkRequestsConcurrently should return data after the response delay`() =
         runTest {
             val responseDelay = 1000L
             val fakeApi = FakeSuccessApi(responseDelay)
-            val viewModel = VariableAmountOfNetworkRequestsViewModel(fakeApi)
+            val viewModel = PerformNetworkRequestsConcurrentlyViewModel(fakeApi)
             viewModel.observe()
 
             Assert.assertTrue(receivedUiStates.isEmpty())
@@ -133,18 +89,19 @@ class VariableAmountOfNetworkRequestsViewModelTest {
                 receivedUiStates
             )
 
+            // Verify that requests actually got executed concurrently within 1000ms
             Assert.assertEquals(
-                2000,
+                1000,
                 currentTime
             )
         }
 
     @Test
-    fun `performNetworkRequestsConcurrently() should return Error UiState on unsuccessful recent-android-versions network request`() =
+    fun `performNetworkRequestsConcurrently should return Error when network request fails`() =
         runTest {
             val responseDelay = 1000L
-            val fakeApi = FakeVersionsErrorApi(responseDelay)
-            val viewModel = VariableAmountOfNetworkRequestsViewModel(fakeApi)
+            val fakeApi = FakeErrorApi(responseDelay)
+            val viewModel = PerformNetworkRequestsConcurrentlyViewModel(fakeApi)
             viewModel.observe()
 
             Assert.assertTrue(receivedUiStates.isEmpty())
@@ -162,30 +119,7 @@ class VariableAmountOfNetworkRequestsViewModelTest {
             )
         }
 
-    @Test
-    fun `performNetworkRequestsConcurrently() should return Error UiState on unsuccessful android-version-features network request`() =
-        runTest {
-            val responseDelay = 1000L
-            val fakeApi = FakeFeaturesErrorApi(responseDelay)
-            val viewModel = VariableAmountOfNetworkRequestsViewModel(fakeApi)
-            viewModel.observe()
-
-            Assert.assertTrue(receivedUiStates.isEmpty())
-
-            viewModel.performNetworkRequestsConcurrently()
-
-            advanceUntilIdle()
-
-            Assert.assertEquals(
-                listOf(
-                    UiState.Loading,
-                    UiState.Error("Network Request failed")
-                ),
-                receivedUiStates
-            )
-        }
-
-    private fun VariableAmountOfNetworkRequestsViewModel.observe() {
+    private fun PerformNetworkRequestsConcurrentlyViewModel.observe() {
         uiState().observeForever { uiState ->
             if (uiState != null) {
                 receivedUiStates.add(uiState)
