@@ -2,60 +2,59 @@ package com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase1
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.lukaslechner.coroutineusecasesonandroid.mock.mockAndroidVersions
-import com.lukaslechner.coroutineusecasesonandroid.utils.ReplaceMainDispatcherRule
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import com.lukaslechner.coroutineusecasesonandroid.utils.MainCoroutineScopeRule
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Assert
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
 
-@ExperimentalCoroutinesApi
 class PerformSingleNetworkRequestViewModelTest {
+    private val receivedUiStates = mutableListOf<UiState>()
 
+    @get:Rule
+    val mainCoroutineScopeRule = MainCoroutineScopeRule()
     @get:Rule
     val testInstantTaskExecutorRule: TestRule = InstantTaskExecutorRule()
 
-    @get: Rule
-    val replaceMainDispatcherRule = ReplaceMainDispatcherRule()
-
-    private val receivedUiStates = mutableListOf<UiState>()
 
     @Test
-    fun `should return Success when network request is successful`() = runTest {
-        val fakeApi = FakeSuccessApi()
-        val viewModel = PerformSingleNetworkRequestViewModel(fakeApi)
+    fun `Should return Success when network request is successful`() {
+        // Arrange
+        val fakeSuccessApi = FakeSuccessApi()
+        val viewModel = PerformSingleNetworkRequestViewModel(fakeSuccessApi)
         observeViewModel(viewModel)
 
-        assertTrue(receivedUiStates.isEmpty())
-
+        // Act
         viewModel.performSingleNetworkRequest()
 
-        assertEquals(
-            listOf(
-                UiState.Loading,
-                UiState.Success(mockAndroidVersions)
-            ),
+
+        // Assert
+        Assert.assertEquals(
+            listOf(UiState.Loading, UiState.Success(mockAndroidVersions)),
             receivedUiStates
         )
     }
 
     @Test
-    fun `should return Error when network request fails`() = runTest {
+    fun `should return Error when network request fails`() {
+        // Arrange
         val fakeApi = FakeErrorApi()
         val viewModel = PerformSingleNetworkRequestViewModel(fakeApi)
         observeViewModel(viewModel)
 
-        assertTrue(receivedUiStates.isEmpty())
-
+        // Act
         viewModel.performSingleNetworkRequest()
 
-        assertEquals(
-            listOf(
-                UiState.Loading,
-                UiState.Error("Network Request failed!")
-            ),
+
+        // Assert
+        Assert.assertEquals(
+            listOf(UiState.Loading, UiState.Error("HTTP 500 Response.error()")),
             receivedUiStates
         )
     }

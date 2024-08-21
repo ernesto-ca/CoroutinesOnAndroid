@@ -3,12 +3,20 @@ package com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase1
 import com.lukaslechner.coroutineusecasesonandroid.mock.AndroidVersion
 import com.lukaslechner.coroutineusecasesonandroid.mock.MockApi
 import com.lukaslechner.coroutineusecasesonandroid.mock.VersionFeatures
-import com.lukaslechner.coroutineusecasesonandroid.mock.mockAndroidVersions
 import com.lukaslechner.coroutineusecasesonandroid.mock.mockVersionFeaturesAndroid10
+import okhttp3.MediaType
+import okhttp3.ResponseBody
+import retrofit2.HttpException
+import retrofit2.Response
 
-class FakeSuccessApi: MockApi{
+class FakeErrorApi: MockApi {
     override suspend fun getRecentAndroidVersions(): List<AndroidVersion> {
-        return mockAndroidVersions
+        throw HttpException(
+            Response.error<List<AndroidVersion>>(
+                500,
+                ResponseBody.create(MediaType.parse("application/json"), "Network request failed!")
+            )
+        )
     }
 
     override suspend fun getAndroidVersionFeatures(apiLevel: Int): VersionFeatures {
