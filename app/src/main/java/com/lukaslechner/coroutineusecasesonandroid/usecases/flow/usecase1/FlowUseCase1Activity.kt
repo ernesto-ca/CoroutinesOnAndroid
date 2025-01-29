@@ -25,11 +25,26 @@ class FlowUseCase1Activity : BaseActivity() {
         setContentView(binding.root)
         binding.recyclerView.adapter = adapter
 
+        /*viewModel.currentStockPriceAsMutableLiveData.observe(this) { uiState ->
+            if (uiState != null) {
+                render(uiState)
+            }
+        }*/
         viewModel.currentStockPriceAsLiveData.observe(this) { uiState ->
             if (uiState != null) {
                 render(uiState)
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        viewModel.startFlowCollection()
+    }
+
+    override fun onStop() {
+        viewModel.stopFlowCollection()
+        super.onStop()
     }
 
     private fun render(uiState: UiState) {

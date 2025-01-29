@@ -9,11 +9,11 @@ import androidx.room.Query
 interface AndroidVersionDao {
 
     @Query("SELECT * FROM androidversions")
-    suspend fun getAndroidVersions(): List<AndroidVersionEntity>
+    fun getAndroidVersions(): List<AndroidVersionEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(androidVersionEntity: AndroidVersionEntity)
+    fun insert(androidVersionEntity: AndroidVersionEntity)
 
     @Query("DELETE FROM androidversions")
-    suspend fun clear()
+    fun clear()
 }
