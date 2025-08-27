@@ -5,6 +5,7 @@ import androidx.lifecycle.asLiveData
 import com.lukaslechner.coroutineusecasesonandroid.base.BaseViewModel
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.Stock
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -55,6 +56,8 @@ class FlowUseCase2ViewModel(
                     stock.country == "United States"
                 }
             }
+            .cancellable() // be careful where to add your cancellable check always have a balance with the code read and cutter
+            // a  lot of cancellables along the flow will may confuse or make it spagetti, a good idea is to set the operator right before the most or complex code will be executed
             .map { stockList ->
                 stockList.filter { stock ->
                     stock.name != "Apple" &&

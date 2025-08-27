@@ -5,6 +5,7 @@ import com.lukaslechner.coroutineusecasesonandroid.mock.AndroidVersion
 import com.lukaslechner.coroutineusecasesonandroid.mock.MockApi
 import com.lukaslechner.coroutineusecasesonandroid.mock.VersionFeatures
 import com.lukaslechner.coroutineusecasesonandroid.mock.mockAndroidVersions
+import com.lukaslechner.coroutineusecasesonandroid.utils.EndpointShouldNotBeCalledException
 import kotlinx.coroutines.delay
 
 class FakeApi: MockApi {
@@ -14,7 +15,7 @@ class FakeApi: MockApi {
     }
 
     override suspend fun getAndroidVersionFeatures(apiLevel: Int): VersionFeatures {
-        throw ReceiverCallNotAllowedException("")
+        throw EndpointShouldNotBeCalledException()
     }
 
 }

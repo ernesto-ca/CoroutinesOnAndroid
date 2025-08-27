@@ -17,6 +17,8 @@ class Perform2SequentialNetworkRequestsViewModel(
                 mockApi.getRecentAndroidVersions().takeIf { it.isNotEmpty() }?.last()?.apiLevel?.let {
                     val getAndroidFeatures = mockApi.getAndroidVersionFeatures(it)
                     uiState.value = UiState.Success(getAndroidFeatures)
+                } ?: {
+                    uiState.value = UiState.Error("Something went wrong, try again later.")
                 }
             } catch (error: Exception) {
                 Timber.e(error)

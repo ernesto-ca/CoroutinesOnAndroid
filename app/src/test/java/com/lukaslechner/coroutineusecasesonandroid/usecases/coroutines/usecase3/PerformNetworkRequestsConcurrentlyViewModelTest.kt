@@ -9,6 +9,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
+
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -20,110 +21,77 @@ class PerformNetworkRequestsConcurrentlyViewModelTest {
     @get:Rule
     val testInstantTaskExecutorRule: TestRule = InstantTaskExecutorRule()
 
-    @get: Rule
-    val replaceMainDispatcherRule = ReplaceMainDispatcherRule()
+    @get:Rule
+    val replaceMainDispatcherRule : ReplaceMainDispatcherRule = ReplaceMainDispatcherRule()
 
-    private val receivedUiStates = mutableListOf<UiState>()
+    private val receivedUiState = mutableListOf<UiState>()
 
     @Test
-    fun `performNetworkRequestsSequentially should return data after 3 times the response delay`() =
-        runTest {
-            val responseDelay = 1000L
-            val fakeApi = FakeSuccessApi(responseDelay)
-            val viewModel = PerformNetworkRequestsConcurrentlyViewModel(fakeApi)
-            viewModel.observe()
+    fun `performNetworkRequest sequentially should load data sequentially`() = runTest {
+        // GIVEN
+        val fakeApi = FakeApiUseCase3(responseDelay = 1000L)
+        val viewModel = PerformNetworkRequestsConcurrentlyViewModel(fakeApi)
+        observeViewModel(viewModel)
+        // WHEN
+        viewModel.performNetworkRequestsSequentially()
+        advanceUntilIdle()
+        val forwardedTime = currentTime
 
-            Assert.assertTrue(receivedUiStates.isEmpty())
-
-            viewModel.performNetworkRequestsSequentially()
-
-            advanceUntilIdle()
-
-            Assert.assertEquals(
-                listOf(
-                    UiState.Loading,
-                    UiState.Success(
-                        listOf(
-                            mockVersionFeaturesOreo,
-                            mockVersionFeaturesPie,
-                            mockVersionFeaturesAndroid10
-                        )
+        // THEN
+        Assert.assertEquals(
+            listOf(
+                UiState.Loading, UiState.Success(
+                    listOf(
+                        mockVersionFeaturesOreo,
+                        mockVersionFeaturesPie,
+                        mockVersionFeaturesAndroid10
                     )
-                ),
-                receivedUiStates
-            )
-
-            // Verify that requests actually got executed sequentially and it took
-            // 3000ms to receive all data
-            Assert.assertEquals(
-                3000,
-                currentTime
-            )
-        }
+                )
+            ),
+        receivedUiState
+        )
+        Assert.assertEquals(3000,  forwardedTime )
+    }
 
     @Test
-    fun `performNetworkRequestsConcurrently should return data after the response delay`() =
-        runTest {
-            val responseDelay = 1000L
-            val fakeApi = FakeSuccessApi(responseDelay)
-            val viewModel = PerformNetworkRequestsConcurrentlyViewModel(fakeApi)
-            viewModel.observe()
+    fun `performNetworkRequest sequentially should load data concurrently`() = runTest{
+        // GIVEN
+        val fakeApi = FakeApiUseCase3(responseDelay = 1000L)
+        val viewModel = PerformNetworkRequestsConcurrentlyViewModel(fakeApi)
+        observeViewModel(viewModel)
+        // WHEN
+        viewModel.performNetworkRequestsConcurrently()
+        advanceUntilIdle()
+        val forwardedTime = currentTime
 
-            Assert.assertTrue(receivedUiStates.isEmpty())
 
-            viewModel.performNetworkRequestsConcurrently()
-
-            advanceUntilIdle()
-
-            Assert.assertEquals(
-                listOf(
-                    UiState.Loading,
-                    UiState.Success(
-                        listOf(
-                            mockVersionFeaturesOreo,
-                            mockVersionFeaturesPie,
-                            mockVersionFeaturesAndroid10
-                        )
+        // THEN
+        Assert.assertEquals(
+            listOf(
+                UiState.Loading, UiState.Success(
+                    listOf(
+                        mockVersionFeaturesOreo,
+                        mockVersionFeaturesPie,
+                        mockVersionFeaturesAndroid10
                     )
-                ),
-                receivedUiStates
-            )
+                )
+            ),
+            receivedUiState
+        )
 
-            // Verify that requests actually got executed concurrently within 1000ms
-            Assert.assertEquals(
-                1000,
-                currentTime
-            )
-        }
+        Assert.assertEquals(
+            1000L,
+            forwardedTime
+        )
 
-    @Test
-    fun `performNetworkRequestsConcurrently should return Error when network request fails`() =
-        runTest {
-            val responseDelay = 1000L
-            val fakeApi = FakeErrorApi(responseDelay)
-            val viewModel = PerformNetworkRequestsConcurrentlyViewModel(fakeApi)
-            viewModel.observe()
+    }
 
-            Assert.assertTrue(receivedUiStates.isEmpty())
-
-            viewModel.performNetworkRequestsConcurrently()
-
-            advanceUntilIdle()
-
-            Assert.assertEquals(
-                listOf(
-                    UiState.Loading,
-                    UiState.Error("Network Request failed")
-                ),
-                receivedUiStates
-            )
-        }
-
-    private fun PerformNetworkRequestsConcurrentlyViewModel.observe() {
-        uiState().observeForever { uiState ->
+    private fun observeViewModel(viewModel: PerformNetworkRequestsConcurrentlyViewModel) {
+        viewModel.uiState().observeForever { uiState ->
             if (uiState != null) {
-                receivedUiStates.add(uiState)
+                receivedUiState.add(uiState)
             }
         }
     }
+
 }

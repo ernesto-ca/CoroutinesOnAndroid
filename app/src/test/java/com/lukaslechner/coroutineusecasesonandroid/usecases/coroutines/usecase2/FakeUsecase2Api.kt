@@ -7,10 +7,23 @@ import com.lukaslechner.coroutineusecasesonandroid.mock.mockAndroidVersions
 import com.lukaslechner.coroutineusecasesonandroid.mock.mockVersionFeaturesAndroid10
 import com.lukaslechner.coroutineusecasesonandroid.mock.mockVersionFeaturesOreo
 import com.lukaslechner.coroutineusecasesonandroid.mock.mockVersionFeaturesPie
+import okhttp3.MediaType
+import okhttp3.ResponseBody
+import retrofit2.HttpException
+import retrofit2.Response
 
-class FakeUsecase2Api: MockApi{
+class FakeUsecase2Api(private val setFail: Boolean = false): MockApi{
     override suspend fun getRecentAndroidVersions(): List<AndroidVersion> {
-        return mockAndroidVersions
+        return if (setFail) {
+            throw HttpException (
+                Response.error<List<AndroidVersion>>(
+                    500,
+                    ResponseBody.create(MediaType.parse("application/json"), "")
+                )
+                )
+        } else {
+            mockAndroidVersions
+        }
     }
 
     override suspend fun getAndroidVersionFeatures(apiLevel: Int): VersionFeatures {
