@@ -17,8 +17,8 @@ suspend fun main() = coroutineScope {
     }
         // by adding this operator the whole flow is running under other coroutine lest call it 'z'
         .buffer(
-            capacity = 2,
-            onBufferOverflow = BufferOverflow.SUSPEND // wait until collector "collect" again (if the buffer is full)
+            capacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST // delete the most recent emission that was not collected
         )
 
     flow.collect { // this will running in another coroutine 'w'
